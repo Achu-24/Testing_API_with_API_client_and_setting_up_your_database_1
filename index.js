@@ -38,14 +38,41 @@ const { resolve } = require('path');
 const app = express();
 const port = 3010;
 
-app.use(express.static('static'));
+app.use(express.json()); // Middleware to parse JSON request body
+app.use(express.static('static')); // Serve static files
 
+// Sample student data
+const students = [
+  { name: 'Alice Johnson', total: 433 },
+  { name: 'Bob Smith', total: 410 },
+  { name: 'Charlie Brown', total: 389 },
+  { name: 'David Lee', total: 370 },
+  { name: 'Eva Green', total: 450 }
+];
+
+// Serve homepage
 app.get('/', (req, res) => {
   res.sendFile(resolve(__dirname, 'pages/index.html'));
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+// ✅ API: Retrieve Students Above Threshold
+app.post('/students/above-threshold', (req, res) => {
+  const { threshold } = req.body;
+
+  if (typeof threshold !== 'number') {
+    return res.status(400).json({ error: 'Threshold must be a number' });
+  }
+
+  // Filter students meeting the threshold criteria
+  const filteredStudents = students.filter(student => student.total > threshold);
+
+  res.json({
+    count: filteredStudents.length,
+    students: filteredStudents
+  });
 });
 
-
+// Start server
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
